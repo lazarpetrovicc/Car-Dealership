@@ -1,0 +1,72 @@
+services:
+  mongo:
+    image: mongo:5.0
+    container_name: mongodb
+    ports:
+      - "27017:27017"
+    networks:
+      - app-network
+    volumes:
+      - mongo-data:/data/db
+    healthcheck:
+      test: ["CMD", "mongo", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      retries: 3
+      start_period: 30s
+      timeout: 5s
+
+  test-backend:
+    build:
+      context: ./backend
+      target: tester
+    environment:
+      - MONGO_TEST_URI=mongodb://mongo:27017/carDealershipDB_test
+    depends_on:
+      mongo:
+        condition: service_healthy
+    networks:
+      - app-network
+    command: ["go", "test", "-v", "./tests/..."]
+
+  test-frontend:
+    build:
+      context: ./frontend
+      target: tester
+    environment:
+      - CI=true
+    depends_on:
+      mongo:
+        condition: service_healthy
+    networks:
+      - app-network
+    command: ["npm", "test", "--", "--verbose"]
+
+  backend:
+    build:
+      context: ./backend
+    ports:
+      - "8000:8000"
+    environment:
+      - MONGO_URI=mongodb://mongo:27017/carDealershipDB
+    depends_on:
+      mongo:
+        condition: service_healthy
+    networks:
+      - app-network
+
+  frontend:
+    build:
+      context: ./frontend
+    ports:
+      - "3000:3000"
+    environment:
+      - REACT_APP_API_URL=http://localhost:8000
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge
+
+volumes:
+  mongo-data:
