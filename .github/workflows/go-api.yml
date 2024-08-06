@@ -1,0 +1,38 @@
+name: Car-Dealership Go API CI
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.22.3'
+          cache: true
+          cache-dependency-path: |
+            backend/go.sum
+            backend/go.mod
+
+      - name: Install dependencies
+        working-directory: backend
+        run: go mod download
+
+      - name: Build Car-Dealership Go API
+        working-directory: backend
+        run: go build -v .
+
+      - name: Test Car-Dealership Go API
+        working-directory: backend/tests
+        run: go test -v carHandler_test.go
