@@ -11,10 +11,13 @@ function App() {
     <Router>
       <div className="App">
         <header className="App-header">
-          <div className="left-corner">
-            <h1>Car Dealership App</h1>
+          <div className="brand-block">
+            <div>
+              <p className="brand-kicker">Inventory • Reservations • Sales</p>
+              <h1>Car Dealership App</h1>
+            </div>
           </div>
-          <nav className="right-corner">
+          <nav className="right-corner" aria-label="Primary navigation">
             <ul>
               <li><Link to="/" aria-label="Home">Home</Link></li>
               <li><Link to="/cars" aria-label="Car Management">Car Management</Link></li>
@@ -22,7 +25,7 @@ function App() {
             </ul>
           </nav>
         </header>
-        <main>
+        <main className="app-content">
           <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/cars" element={<CarPage />} />

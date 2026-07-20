@@ -17,11 +17,11 @@ const Home = () => {
       <div className="app-info">
         <h2>App Features</h2>
         <ul className="features-list">
-          <li>- Manage reservations and deletions of cars.</li>
-          <li>- Add new cars to your inventory and update existing details.</li>
-          <li>- View detailed information including car make, model, price, and status.</li>
-          <li>- Reserve or sell cars to customers with ease.</li>
-          <li>- Cancel reservations and delete available cars as needed.</li>
+          <li>Manage reservations and deletions of cars.</li>
+          <li>Add new cars to your inventory and update existing details.</li>
+          <li>View detailed information including car make, model, price, and status.</li>
+          <li>Reserve or sell cars to customers with ease.</li>
+          <li>Cancel reservations and delete available cars as needed.</li>
         </ul>
       </div>
     </div>

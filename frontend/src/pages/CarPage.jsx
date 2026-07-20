@@ -58,8 +58,7 @@ const CarPage = () => {
         <Tab label="Reserved" onClick={() => handleTabChange(carStatuses.StatusReserved)} active={currentTab === carStatuses.StatusReserved} />
         <Tab label="Sold" onClick={() => handleTabChange(carStatuses.StatusSold)} active={currentTab === carStatuses.StatusSold} />
       </div>
-      <div>
-        {/* Button to add new car */}
+      <div className="inventory-toolbar">
         {currentTab === carStatuses.StatusAvailable && (
           <button className="add-car-button" onClick={handleAddCar}>Add Car</button>
         )}
