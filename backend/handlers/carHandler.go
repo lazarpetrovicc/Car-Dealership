@@ -36,6 +36,13 @@ func InitCarHandler(client *mongo.Client, dbName string) {
 	carService = services.NewCarServiceInterface(client, dbName)
 }
 
+// HealthCheck returns a simple readiness response.
+func HealthCheck(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(map[string]string{"status": "ok"})
+}
+
 // GetCarsByStatus retrieves cars by their status and returns them in JSON format
 func GetCarsByStatus(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
@@ -49,7 +56,7 @@ func GetCarsByStatus(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
-		json.NewEncoder(w).Encode(cars)
+		writeJSONResponse(w, http.StatusOK, cars)
 	default:
 		http.Error(w, "Invalid status provided", http.StatusBadRequest)
 	}
@@ -96,7 +103,7 @@ func CreateCar(w http.ResponseWriter, r *http.Request) {
 	// Retrieve the file from the form
 	file, handler, err := r.FormFile("picture")
 	if err != nil {
-		http.Error(w, "Error uploading file", http.StatusInternalServerError)
+		http.Error(w, "picture is required", http.StatusBadRequest)
 		return
 	}
 	defer file.Close()
@@ -104,7 +111,7 @@ func CreateCar(w http.ResponseWriter, r *http.Request) {
 	// Read the file into a byte slice
 	fileData, err := io.ReadAll(file)
 	if err != nil {
-		http.Error(w, "Error reading file", http.StatusInternalServerError)
+		http.Error(w, "failed to read uploaded picture", http.StatusBadRequest)
 		return
 	}
 
@@ -123,7 +130,7 @@ func CreateCar(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-	json.NewEncoder(w).Encode(result)
+	writeJSONResponse(w, http.StatusOK, result)
 }
 
 // UpdateCar handles updating the details of an existing available car in the database. Only available cars can be updated, and their status cannot be changed through updating.
@@ -156,6 +163,7 @@ func UpdateCar(w http.ResponseWriter, r *http.Request) {
 
 	// Retrieve the file from the form, if present
 	var fileData []byte
+	var fileName string
 	file, handler, err := r.FormFile("picture")
 	if err == nil {
 		defer file.Close()
@@ -164,6 +172,7 @@ func UpdateCar(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, "Error reading file", http.StatusInternalServerError)
 			return
 		}
+		fileName = handler.Filename
 		car.Picture = string(fileData)
 	}
 
@@ -175,12 +184,12 @@ func UpdateCar(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Update the car in the database
-	result, err := carService.UpdateCar(id, &car, fileData, handler.Filename)
+	result, err := carService.UpdateCar(id, &car, fileData, fileName)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-	json.NewEncoder(w).Encode(result)
+	writeJSONResponse(w, http.StatusOK, result)
 }
 
 // DeleteCar handles deleting a car from the database by its ID. Only available cars can be deleted.
@@ -198,7 +207,7 @@ func DeleteCar(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-	json.NewEncoder(w).Encode(result)
+	writeJSONResponse(w, http.StatusOK, result)
 }
 
 // ReserveCar handles reserving a car by a customer. Only available cars can be reserved.
@@ -229,7 +238,7 @@ func ReserveCar(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-	json.NewEncoder(w).Encode(result)
+	writeJSONResponse(w, http.StatusOK, result)
 }
 
 // CancelReservation handles canceling a car reservation
@@ -247,7 +256,7 @@ func CancelReservation(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-	json.NewEncoder(w).Encode(result)
+	writeJSONResponse(w, http.StatusOK, result)
 }
 
 // SellCar handles selling a car to a customer. Only available cars can be sold.
@@ -278,7 +287,7 @@ func SellCar(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-	json.NewEncoder(w).Encode(result)
+	writeJSONResponse(w, http.StatusOK, result)
 }
 
 // handleValidationErrors formats and returns validation errors in JSON format
@@ -306,8 +315,11 @@ func handleValidationErrors(w http.ResponseWriter, err error) {
 		}
 	}
 
-	// Respond with validation errors
+	writeJSONResponse(w, http.StatusBadRequest, validationErrors)
+}
+
+func writeJSONResponse(w http.ResponseWriter, statusCode int, payload interface{}) {
 	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusBadRequest)
-	json.NewEncoder(w).Encode(validationErrors)
+	w.WriteHeader(statusCode)
+	json.NewEncoder(w).Encode(payload)
 }

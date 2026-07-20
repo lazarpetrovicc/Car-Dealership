@@ -182,6 +182,10 @@ The backend exposes car-related routes through the router in the backend. API do
 - OpenAPI spec: [docs/openapi.yaml](docs/openapi.yaml)
 - Postman collection: [docs/Car-Dealership.json](docs/Car-Dealership.json)
 
+### Health check
+
+- `GET /health` — Verify that the backend is running and reachable
+
 ### Car listing and management
 
 - `GET /cars/{status}` — List cars by status, where `status` is one of `available`, `reserved`, or `sold`

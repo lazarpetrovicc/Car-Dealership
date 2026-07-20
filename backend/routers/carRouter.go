@@ -9,6 +9,9 @@ import (
 func InitRoutes() *mux.Router {
 	carRouter := mux.NewRouter()
 
+	// Health endpoint
+	carRouter.HandleFunc("/health", handlers.HealthCheck).Methods("GET")
+
 	// CRUD operations on cars
 
 	// GET /cars/{status}

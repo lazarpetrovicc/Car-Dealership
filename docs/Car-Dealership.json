@@ -8,6 +8,24 @@
 	},
 	"item": [
 		{
+			"name": "Health Check",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "localhost:8000/health",
+					"host": [
+						"localhost"
+					],
+					"port": "8000",
+					"path": [
+						"health"
+					]
+				}
+			},
+			"response": []
+		},
+		{
 			"name": "Get Available Cars",
 			"request": {
 				"method": "GET",

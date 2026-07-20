@@ -113,6 +113,17 @@ func newMultipartRequest(method, url string, fields map[string]string, fileField
 	return req, nil
 }
 
+func TestHealthCheck(t *testing.T) {
+	req := httptest.NewRequest("GET", "/health", nil)
+	rr := httptest.NewRecorder()
+
+	handlers.HealthCheck(rr, req)
+
+	assert.Equal(t, http.StatusOK, rr.Code)
+	assert.Equal(t, "application/json", rr.Header().Get("Content-Type"))
+	assert.Contains(t, rr.Body.String(), "\"status\":\"ok\"")
+}
+
 func TestGetCarsByStatus(t *testing.T) {
 	mockCarService := &MockCarService{
 		GetCarsByStatusFunc: func(status string) ([]models.Car, error) {
