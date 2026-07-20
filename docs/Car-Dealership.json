@@ -116,11 +116,6 @@
 							"key": "picture",
 							"type": "file",
 							"src": "postman-cloud:///1ef2f619-3fd7-4810-bc16-9933adc0f899"
-						},
-						{
-							"key": "status",
-							"value": "available",
-							"type": "text"
 						}
 					]
 				},
@@ -174,11 +169,6 @@
 							"key": "picture",
 							"type": "file",
 							"src": "postman-cloud:///1ef2f626-6ddf-4f20-ad76-fa53559d7496"
-						},
-						{
-							"key": "status",
-							"value": "available",
-							"type": "text"
 						}
 					]
 				},

@@ -1,0 +1,278 @@
+openapi: 3.0.3
+info:
+  title: Car Dealership API
+  description: API for managing cars, reservations, sales, and car images in the Car Dealership application.
+  version: 1.0.0
+servers:
+  - url: http://localhost:8000
+paths:
+  /cars/{status}:
+    get:
+      summary: List cars by status
+      description: Returns all cars for the provided status. Valid values are available, reserved, and sold.
+      parameters:
+        - in: path
+          name: status
+          required: true
+          schema:
+            type: string
+            enum: [available, reserved, sold]
+          description: Car status to filter by
+      responses:
+        '200':
+          description: List of cars
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Car'
+        '400':
+          description: Invalid status provided
+
+  /cars:
+    post:
+      summary: Create a new car
+      description: Creates a new car and uploads an image file. The backend always stores the car with the available status.
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required:
+                - make
+                - model
+                - year
+                - price
+                - picture
+              properties:
+                make:
+                  type: string
+                model:
+                  type: string
+                year:
+                  type: integer
+                  minimum: 1900
+                price:
+                  type: number
+                  minimum: 1
+                picture:
+                  type: string
+                  format: binary
+      responses:
+        '200':
+          description: Car created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Car'
+        '400':
+          description: Validation error
+        '500':
+          description: Server error
+
+  /cars/{id}:
+    put:
+      summary: Update a car
+      description: Updates an existing car. The backend keeps the car in the available status for updates.
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+          description: MongoDB ObjectID of the car
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                make:
+                  type: string
+                model:
+                  type: string
+                year:
+                  type: integer
+                  minimum: 1900
+                price:
+                  type: number
+                  minimum: 1
+                picture:
+                  type: string
+                  format: binary
+      responses:
+        '200':
+          description: Car updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Car'
+        '400':
+          description: Invalid car ID or validation error
+        '500':
+          description: Server error
+    delete:
+      summary: Delete a car
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+          description: MongoDB ObjectID of the car
+      responses:
+        '200':
+          description: Car deleted successfully
+          content:
+            application/json:
+              schema:
+                type: object
+        '400':
+          description: Invalid car ID
+        '500':
+          description: Server error
+
+  /cars/{id}/reserve:
+    post:
+      summary: Reserve a car
+      description: Reserves an available car for a customer.
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+          description: MongoDB ObjectID of the car
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Customer'
+      responses:
+        '200':
+          description: Car reserved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Car'
+        '400':
+          description: Invalid car ID or customer payload
+        '500':
+          description: Server error
+
+  /cars/{id}/cancel-reservation:
+    post:
+      summary: Cancel a reservation
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+          description: MongoDB ObjectID of the car
+      responses:
+        '200':
+          description: Reservation canceled successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Car'
+        '400':
+          description: Invalid car ID
+        '500':
+          description: Server error
+
+  /cars/{id}/sell:
+    post:
+      summary: Sell a car
+      description: Marks a car as sold to a customer.
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+          description: MongoDB ObjectID of the car
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Customer'
+      responses:
+        '200':
+          description: Car sold successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Car'
+        '400':
+          description: Invalid car ID or customer payload
+        '500':
+          description: Server error
+
+  /cars/image/{id}:
+    get:
+      summary: Get car image
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+          description: Picture ID or GridFS identifier
+      responses:
+        '200':
+          description: Image content
+          content:
+            image/jpeg:
+              schema:
+                type: string
+                format: binary
+        '500':
+          description: Server error
+
+components:
+  schemas:
+    Customer:
+      type: object
+      required:
+        - fullName
+        - email
+        - phoneNumber
+      properties:
+        fullName:
+          type: string
+        email:
+          type: string
+          format: email
+        phoneNumber:
+          type: string
+
+    Car:
+      type: object
+      properties:
+        id:
+          type: string
+        make:
+          type: string
+        model:
+          type: string
+        year:
+          type: integer
+          minimum: 1900
+        price:
+          type: number
+          minimum: 1
+        status:
+          type: string
+          enum: [available, reserved, sold]
+        customer:
+          $ref: '#/components/schemas/Customer'
+        picture:
+          type: string
+          description: Stored image reference
